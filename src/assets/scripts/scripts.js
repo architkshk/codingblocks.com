@@ -962,11 +962,15 @@ window.initializeMaps = function () {
                         stylers: [{hue: "#ffff00"}, {lightness: -25}, {saturation: -97}]
                     }],
                     zoomLevel = typeof $(this).attr("data-map-zoom") !== "undefined" && $(this).attr("data-map-zoom") !== "" ? $(this).attr("data-map-zoom") * (window.innerHeight < 768 ? 0.9 : 1) : 17,
-                    latlong = typeof $(this).attr("data-latlong") != "undefined" ? $(this).attr("data-latlong") : false,
-                    latitude = latlong ? 1 * latlong.substr(0, latlong.indexOf(",")) : false,
-                    longitude = latlong ? 1 * latlong.substr(latlong.indexOf(",") + 1) : false,
-                    geocoder = new google.maps.Geocoder,
-                    address = typeof $(this).attr("data-address") !== "undefined" ? $(this).attr("data-address").split(";") : [""],
+                    latlong = typeof $(this).attr("data-latlong") != "undefined" ? $(this).attr("data-latlong").split(";") : [""],
+                    markers = latlong.map(function(mar) {
+                        return {
+                            lat: (1 * mar.substr(0, mar.indexOf(","))),
+                            long: (1 * mar.substr(mar.indexOf(",") + 1))
+                        };
+                    }),
+                    // geocoder = new google.maps.Geocoder,
+                    // address = typeof $(this).attr("data-address") !== "undefined" ? $(this).attr("data-address").split(";") : [""],
                     markerTitle = "We Are Here", isDraggable = $(document).width() > 766 ? true : false, map, marker,
                     markerImage, mapOptions = {
                         draggable: isDraggable,
@@ -978,53 +982,59 @@ window.initializeMaps = function () {
                 if ($(this).attr("data-marker-title") != undefined && $(this).attr("data-marker-title") != "") {
                     markerTitle = $(this).attr("data-marker-title")
                 }
-                if (address != undefined && address[0] != "") {
-                    geocoder.geocode({address: address[0].replace("[nomarker]", "")}, function (results, status) {
-                        if (status == google.maps.GeocoderStatus.OK) {
-                            var map = new google.maps.Map(mapInstance, mapOptions);
-                            map.setCenter(results[0].geometry.location);
-                            address.forEach(function (address) {
-                                var markerGeoCoder;
-                                markerImage = {
-                                    url: "/assets/images/cb/cb_marker.png",
-                                    scaledSize: new google.maps.Size(60, 100),
-                                    origin: new google.maps.Point(0, 0)
-                                };
-                                if (/(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)/.test(address)) {
-                                    var latlong = address.split(","), marker = new google.maps.Marker({
-                                        position: {
-                                            lat: 1 * latlong[0],
-                                            lng: 1 * latlong[1]
-                                        }, map: map, icon: markerImage, title: markerTitle, optimised: false
-                                    })
-                                } else if (address.indexOf("[nomarker]") < 0) {
-                                    markerGeoCoder = new google.maps.Geocoder;
-                                    markerGeoCoder.geocode({address: address.replace("[nomarker]", "")}, function (results, status) {
-                                        if (status == google.maps.GeocoderStatus.OK) {
-                                            marker = new google.maps.Marker({
-                                                map: map,
-                                                icon: markerImage,
-                                                title: markerTitle,
-                                                position: results[0].geometry.location,
-                                                optimised: false
-                                            })
-                                        }
-                                    })
-                                }
-                            })
-                        } else {
-                            console.log("There was a problem geocoding the address.")
-                        }
-                    })
-                } else if (latitude != undefined && latitude != "" && latitude != false && longitude != undefined && longitude != "" && longitude != false) {
-                    mapOptions.center = {lat: latitude, lng: longitude};
+                // if (address != undefined && address[0] != "") {
+                //     geocoder.geocode({address: address[0].replace("[nomarker]", "")}, function (results, status) {
+                //         if (status == google.maps.GeocoderStatus.OK) {
+                //             var map = new google.maps.Map(mapInstance, mapOptions);
+                //             map.setCenter(results[0].geometry.location);
+                //             address.forEach(function (address) {
+                //                 var markerGeoCoder;
+                //                 markerImage = {
+                //                     url: "/assets/images/cb/cb_marker.png",
+                //                     scaledSize: new google.maps.Size(60, 100),
+                //                     origin: new google.maps.Point(0, 0)
+                //                 };
+                //                 if (/(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)/.test(address)) {
+                //                     var latlong = address.split(","), marker = new google.maps.Marker({
+                //                         position: {
+                //                             lat: 1 * latlong[0],
+                //                             lng: 1 * latlong[1]
+                //                         }, map: map, icon: markerImage, title: markerTitle, optimised: false
+                //                     })
+                //                 } else if (address.indexOf("[nomarker]") < 0) {
+                //                     markerGeoCoder = new google.maps.Geocoder;
+                //                     markerGeoCoder.geocode({address: address.replace("[nomarker]", "")}, function (results, status) {
+                //                         if (status == google.maps.GeocoderStatus.OK) {
+                //                             marker = new google.maps.Marker({
+                //                                 map: map,
+                //                                 icon: markerImage,
+                //                                 title: markerTitle,
+                //                                 position: results[0].geometry.location,
+                //                                 optimised: false
+                //                             })
+                //                         }
+                //                     })
+                //                 }
+                //             })
+                //         } else {
+                //             console.log("There was a problem geocoding the address.")
+                //         }
+                //     })
+                // } else
+                {
+                    var bounds = new google.maps.LatLngBounds();
                     map = new google.maps.Map(mapInstance, mapOptions);
-                    marker = new google.maps.Marker({
-                        position: {lat: latitude, lng: longitude},
-                        map: map,
-                        icon: markerImage,
-                        title: markerTitle
-                    })
+                    for (i = 0; i < markers.length; i++) {
+                        var position = { lat: markers[i].lat, lng: markers[i].long }
+                        bounds.extend(position);
+                        marker = new google.maps.Marker({
+                            position: position,
+                            map: map,
+                            icon: markerImage,
+                            title: markerTitle
+                        })
+                    }
+                    map.fitBounds(bounds);
                 }
             })
         }
