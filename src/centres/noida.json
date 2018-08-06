@@ -3,7 +3,8 @@
   "metas": [
     {
       "name": "description",
-      "content": "India's best programming & software training institute Coding Blocks Noida offers Java, Web development & Android coaching classes in Greater Noida."
+      "content":
+        "India's best programming & software training institute Coding Blocks Noida offers Java, Web development & Android coaching classes in Greater Noida."
     }
   ],
   "header": {
@@ -31,13 +32,14 @@
     "location": "Coding Blocks Noida,<br> First Floor, A-73, Sector-2 <br> (50m from Sector-15 Metro Station), Noida - 201301",
     "contactPerson": "Varun Kohli",
     "phoneNumbers": [
-      "9999579111",
+      "9999579111", 
       "9999579222"
     ],
     "email": "varun@codingblocks.com",
     "mapAddress": "A-73, A Block, Sector 2, Noida, Uttar Pradesh 201301",
     "isSection": true,
-    "isFilled": true
+    "isFilled": true,
+    "latitudeLongitude": "28.585288,77.312703"
   },
   "coursesSection": {
     "coursesList": []
